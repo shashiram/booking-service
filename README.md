@@ -31,6 +31,7 @@ A Spring Boot based booking service application.
     ```
 
     Or run it directly from your IDE.
+5. swagger url : http://localhost:8080/swagger-ui/index.html
 
 
     
