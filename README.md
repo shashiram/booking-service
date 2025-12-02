@@ -13,7 +13,7 @@ A Spring Boot based booking service application.
 
 ## Running the Application Locally
 
-1.  Ensure PostgreSQL is running and accessible.
+1.  Ensure PostgreSQL is running and accessible.DB schema file name is db_schema.sql
 
 2.  Configure your database credentials in `application.yml`.
 
