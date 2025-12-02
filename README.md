@@ -14,6 +14,10 @@ A Spring Boot based booking service application.
 ## Running the Application Locally
 
 1.  Ensure PostgreSQL is running and accessible.DB schema file name is db_schema.sql
+     - run db schema script
+     - setup 5 vehicle record
+     - set 25 cleaners, five for each vehicle
+     - Run createDailySlotsCron cron to prepopulate all time slot for the day.
 
 2.  Configure your database credentials in `application.yml`.
 

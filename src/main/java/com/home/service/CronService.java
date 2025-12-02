@@ -68,7 +68,7 @@ public class CronService {
                 AvailabilitySlot slot = new AvailabilitySlot();
 
                 slot.setCleaner(cleaner);
-                slot.setSlotDate(LocalDate.now().plusDays(1));
+                slot.setSlotDate(LocalDate.now());
                 slot.setStartTime(start);
                 slot.setEndTime(start.plusMinutes(30));
                 slot.setAvailable(true);
