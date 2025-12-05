@@ -1,13 +1,27 @@
 --
--- PostgreSQL database dump
+-- PostgreSQL database dump database name: booking_db
 --
 
-\restrict Vj58gt4Esagbnw8ajKwJ8IpM9OgQQ9QJuXDiTMqv2peA6azb3GDQmq0JA396PgU
 
--- Dumped from database version 15.14 (Debian 15.14-1.pgdg13+1)
--- Dumped by pg_dump version 15.14
 
--- Started on 2025-12-02 08:24:57 UTC
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+
+
+
+ALTER DATABASE booking_db OWNER TO admin;
+
+
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -21,20 +35,22 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 2 (class 3079 OID 58192)
--- Name: uuid-ossp; Type: EXTENSION; Schema: -; Owner: -
+-- TOC entry 5 (class 2615 OID 2200)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
 --
 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
 
+
+
+ALTER SCHEMA public OWNER TO pg_database_owner;
 
 --
--- TOC entry 3496 (class 0 OID 0)
--- Dependencies: 2
--- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: 
+-- TOC entry 3497 (class 0 OID 0)
+-- Dependencies: 5
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
 --
 
-COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
+COMMENT ON SCHEMA public IS 'standard public schema';
 
 
 SET default_tablespace = '';
@@ -47,15 +63,15 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.availability_slots (
-    id bigint NOT NULL,
-    cleaner_id bigint NOT NULL,
-    slot_date date NOT NULL,
-    start_time time without time zone NOT NULL,
-    end_time time without time zone NOT NULL,
-    booking_id uuid,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    is_available boolean DEFAULT true
+                                           id bigint NOT NULL,
+                                           cleaner_id bigint NOT NULL,
+                                           slot_date date NOT NULL,
+                                           start_time time without time zone NOT NULL,
+                                           end_time time without time zone NOT NULL,
+                                           booking_id uuid,
+                                           created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+                                           updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+                                           is_available boolean DEFAULT true
 );
 
 
@@ -77,7 +93,7 @@ CREATE SEQUENCE public.availability_slots_id_seq
 ALTER TABLE public.availability_slots_id_seq OWNER TO admin;
 
 --
--- TOC entry 3497 (class 0 OID 0)
+-- TOC entry 3498 (class 0 OID 0)
 -- Dependencies: 222
 -- Name: availability_slots_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: admin
 --
@@ -91,10 +107,10 @@ ALTER SEQUENCE public.availability_slots_id_seq OWNED BY public.availability_slo
 --
 
 CREATE TABLE public.booking_cleaner (
-    id bigint NOT NULL,
-    booking_id uuid NOT NULL,
-    cleaner_id bigint NOT NULL,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+                                        id bigint NOT NULL,
+                                        booking_id uuid NOT NULL,
+                                        cleaner_id bigint NOT NULL,
+                                        created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -116,7 +132,7 @@ CREATE SEQUENCE public.booking_cleaner_id_seq
 ALTER TABLE public.booking_cleaner_id_seq OWNER TO admin;
 
 --
--- TOC entry 3498 (class 0 OID 0)
+-- TOC entry 3499 (class 0 OID 0)
 -- Dependencies: 220
 -- Name: booking_cleaner_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: admin
 --
@@ -130,17 +146,17 @@ ALTER SEQUENCE public.booking_cleaner_id_seq OWNED BY public.booking_cleaner.id;
 --
 
 CREATE TABLE public.bookings (
-    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
-    customer_id bigint NOT NULL,
-    duration_hours integer NOT NULL,
-    total_cleaners integer NOT NULL,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    booking_date date NOT NULL,
-    status character varying(50) NOT NULL,
-    start_time time without time zone NOT NULL,
-    end_time time without time zone NOT NULL,
-    CONSTRAINT bookings_total_cleaners_check CHECK ((total_cleaners = ANY (ARRAY[1, 2, 3])))
+                                 id uuid NOT NULL,
+                                 customer_id bigint NOT NULL,
+                                 duration_hours integer NOT NULL,
+                                 total_cleaners integer NOT NULL,
+                                 created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+                                 updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+                                 booking_date date NOT NULL,
+                                 status character varying(50) NOT NULL,
+                                 start_time time without time zone NOT NULL,
+                                 end_time time without time zone NOT NULL,
+                                 CONSTRAINT bookings_total_cleaners_check CHECK ((total_cleaners = ANY (ARRAY[1, 2, 3])))
 );
 
 
@@ -152,16 +168,16 @@ ALTER TABLE public.bookings OWNER TO admin;
 --
 
 CREATE TABLE public.cleaners (
-    id bigint NOT NULL,
-    name character varying(100) NOT NULL,
-    email character varying(100) NOT NULL,
-    phone character varying(20),
-    vehicle_id bigint NOT NULL,
-    is_active boolean DEFAULT true,
-    working_hours_start time without time zone DEFAULT '08:00:00'::time without time zone NOT NULL,
-    working_hours_end time without time zone DEFAULT '22:00:00'::time without time zone NOT NULL,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+                                 id bigint NOT NULL,
+                                 name character varying(100) NOT NULL,
+                                 email character varying(100) NOT NULL,
+                                 phone character varying(20),
+                                 vehicle_id bigint NOT NULL,
+                                 is_active boolean DEFAULT true,
+                                 working_hours_start time without time zone DEFAULT '08:00:00'::time without time zone NOT NULL,
+                                 working_hours_end time without time zone DEFAULT '22:00:00'::time without time zone NOT NULL,
+                                 created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+                                 updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -183,7 +199,7 @@ CREATE SEQUENCE public.cleaners_id_seq
 ALTER TABLE public.cleaners_id_seq OWNER TO admin;
 
 --
--- TOC entry 3499 (class 0 OID 0)
+-- TOC entry 3500 (class 0 OID 0)
 -- Dependencies: 217
 -- Name: cleaners_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: admin
 --
@@ -197,12 +213,12 @@ ALTER SEQUENCE public.cleaners_id_seq OWNED BY public.cleaners.id;
 --
 
 CREATE TABLE public.vehicles (
-    id bigint NOT NULL,
-    vehicle_identifier character varying(50) NOT NULL,
-    capacity integer DEFAULT 5 NOT NULL,
-    is_active boolean DEFAULT true,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+                                 id bigint NOT NULL,
+                                 vehicle_identifier character varying(50) NOT NULL,
+                                 capacity integer DEFAULT 5 NOT NULL,
+                                 is_active boolean DEFAULT true,
+                                 created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+                                 updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -224,7 +240,7 @@ CREATE SEQUENCE public.vehicles_id_seq
 ALTER TABLE public.vehicles_id_seq OWNER TO admin;
 
 --
--- TOC entry 3500 (class 0 OID 0)
+-- TOC entry 3501 (class 0 OID 0)
 -- Dependencies: 215
 -- Name: vehicles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: admin
 --
@@ -510,11 +526,11 @@ ALTER TABLE ONLY public.cleaners
     ADD CONSTRAINT fk_cleaner_vehicle FOREIGN KEY (vehicle_id) REFERENCES public.vehicles(id) ON DELETE RESTRICT;
 
 
--- Completed on 2025-12-02 08:24:57 UTC
+-- Completed on 2025-12-05 09:50:58 UTC
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Vj58gt4Esagbnw8ajKwJ8IpM9OgQQ9QJuXDiTMqv2peA6azb3GDQmq0JA396PgU
+
 

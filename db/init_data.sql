@@ -1,4 +1,14 @@
 
+--
+-- Data for TABLE: vehicles;
+--
+
+INSERT INTO public.vehicles (vehicle_identifier, capacity, is_active, created_at, updated_at) VALUES ('VH001', 5, true, now(), now());
+INSERT INTO public.vehicles (vehicle_identifier, capacity, is_active, created_at, updated_at) VALUES ('VH002', 5, true, now(), now());
+INSERT INTO public.vehicles (vehicle_identifier, capacity, is_active, created_at, updated_at) VALUES ('VH003', 5, true, now(), now());
+INSERT INTO public.vehicles (vehicle_identifier, capacity, is_active, created_at, updated_at) VALUES ('VH004', 5, true, now(), now());
+INSERT INTO public.vehicles (vehicle_identifier, capacity, is_active, created_at, updated_at) VALUES ('VH005', 5, true, now(), now());
+
 -- Data for TABLE: cleaners;
 --
 
@@ -29,12 +39,5 @@ INSERT INTO public.cleaners (name, email, phone, vehicle_id, is_active, working_
 INSERT INTO public.cleaners (name, email, phone, vehicle_id, is_active, working_hours_start, working_hours_end, created_at, updated_at) VALUES ( 'Yara Hassan', 'yara.hassan@justlife.com', '+971501234025', 5, true, '08:00:00', '22:00:00', now(), now());
 
 
---
--- Data for TABLE: vehicles;
---
 
-INSERT INTO public.vehicles (vehicle_identifier, capacity, is_active, created_at, updated_at) VALUES ('VH001', 5, true, now(), now());
-INSERT INTO public.vehicles (vehicle_identifier, capacity, is_active, created_at, updated_at) VALUES ('VH002', 5, true, now(), now());
-INSERT INTO public.vehicles (vehicle_identifier, capacity, is_active, created_at, updated_at) VALUES ('VH003', 5, true, now(), now());
-INSERT INTO public.vehicles (vehicle_identifier, capacity, is_active, created_at, updated_at) VALUES ('VH004', 5, true, now(), now());
-INSERT INTO public.vehicles (vehicle_identifier, capacity, is_active, created_at, updated_at) VALUES ('VH005', 5, true, now(), now());
+
