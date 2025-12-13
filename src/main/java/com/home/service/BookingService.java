@@ -23,20 +23,12 @@ import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.home.constant.AppConstant.*;
+
 @Service
 public class BookingService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-
-    private final static Integer TWO_HOURS_DURATION = 2;
-    private final static Integer FOUR_HOURS_DURATION = 4;
-    private final static Integer INTERVAL = 30; // in minutes
-    private final static Integer REQUIRED_SLOTS_IN_2_HOURS_DURATION = 5;
-    private final static Integer REQUIRED_SLOTS_IN_4_HOURS_DURATION = 9;
-    private final static String END_INTERVAL_2_HOURS = "2.5 hours";
-    private final static String END_INTERVAL_4_HOURS = "4.5 hours";
-    private final static String WINDOW_INTERVAL_2_HOURS = "2 hour 29 minutes";
-    private final static String WINDOW_INTERVAL_4_HOURS = "4 hour 29 minutes";
 
     private final AvailabilitySlotRepository availabilitySlotRepository;
 
@@ -242,146 +234,6 @@ public class BookingService {
         // Return final booking ID to caller
         log.info(" Returning booking ID");
         return bookingId.toString();
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public List<CleanerAvailabilityRespDTO> checkAvailability(LocalDate date) {
-
-        // query for duration 2 hours
-
-        String slotSqlQueryFor2Hours = queryStringForAvailableSlots(END_INTERVAL_2_HOURS, WINDOW_INTERVAL_2_HOURS);
-
-        log.debug("Generated SQL (2 hours): {}", slotSqlQueryFor2Hours);
-
-        Query slotQueryFor2Hours = entityManager.createNativeQuery(slotSqlQueryFor2Hours, SlotRangeRecord.class);
-        slotQueryFor2Hours.setParameter("slotDate", date);
-        slotQueryFor2Hours.setParameter("requiredSlotCount", REQUIRED_SLOTS_IN_2_HOURS_DURATION);
-
-        List<SlotRangeRecord> slotFor2HoursList = slotQueryFor2Hours.getResultList();
-
-        // query for duration 4 hours
-        String slotSqlQueryFor4Hours = queryStringForAvailableSlots(END_INTERVAL_4_HOURS, WINDOW_INTERVAL_4_HOURS);
-
-        log.debug("Generated SQL (4 hours): {}", slotSqlQueryFor4Hours);
-
-        Query slotQueryFor4Hours = entityManager.createNativeQuery(slotSqlQueryFor4Hours, SlotRangeRecord.class);
-        slotQueryFor4Hours.setParameter("slotDate", date);
-        slotQueryFor4Hours.setParameter("requiredSlotCount", REQUIRED_SLOTS_IN_4_HOURS_DURATION);
-
-        List<SlotRangeRecord> slotFor4HoursList = slotQueryFor4Hours.getResultList();
-
-        Map<Long, List<CleanerAvailabilitySlotDTO>> map = new HashMap<>();
-
-        for (SlotRangeRecord slot : slotFor2HoursList) {
-            for (String s : slot.cleanerIds().split(",")) {
-                map.computeIfAbsent(Long.parseLong(s), k -> new ArrayList<>())
-                        .add(new CleanerAvailabilitySlotDTO(
-                                TWO_HOURS_DURATION, slot.startTime(), slot.endTime().minusMinutes(INTERVAL)));
-            }
-        }
-
-        for (SlotRangeRecord slot : slotFor4HoursList) {
-            for (String s : slot.cleanerIds().split(",")) {
-                map.computeIfAbsent(Long.parseLong(s), k -> new ArrayList<>())
-                        .add(new CleanerAvailabilitySlotDTO(
-                                FOUR_HOURS_DURATION, slot.startTime(), slot.endTime().minusMinutes(INTERVAL)));
-            }
-        }
-
-        List<CleanerAvailabilityRespDTO> availableRespDTOList = new ArrayList<>();
-        for (Map.Entry<Long, List<CleanerAvailabilitySlotDTO>> entry : map.entrySet()) {
-            availableRespDTOList.add(new CleanerAvailabilityRespDTO(entry.getKey(), date, entry.getValue()));
-        }
-
-        log.info("Total cleaners available: {}", availableRespDTOList.size());
-        log.info("Availability check completed for date {}", date);
-
-        return availableRespDTOList;
-    }
-
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public List<CleanerAvailabilityRespDTO> checkAvailability(LocalDate date, LocalTime startTime, Integer duration) {
-
-        log.info("Checking cleaner availability for date: {}", date);
-
-        BookingDTO paramDTO = getBookingQueryParamDTO(date, startTime, duration);
-        List<CleanerRecord> slots = availabilitySlotRepository
-                .findAvailableCleanersWithExactSlotCount(paramDTO.getDate(), paramDTO.getStartTime(),
-                        paramDTO.getEndTime(), paramDTO.getRequiredSlotCount());
-
-        List<CleanerAvailabilityRespDTO> respDTOList = new ArrayList<>();
-        for (CleanerRecord slot : slots) {
-
-            List<CleanerAvailabilitySlotDTO> slotDTOS = new ArrayList<>();
-            slotDTOS.add(new CleanerAvailabilitySlotDTO(duration, paramDTO.getStartTime(), paramDTO.getBookingEndTime()));
-
-            respDTOList.add(new CleanerAvailabilityRespDTO(
-                            slot.cleanerId(),
-                            paramDTO.getDate(),
-                            slotDTOS
-                    )
-            );
-        }
-        return respDTOList;
-
-    }
-
-    public void validateCheckAvailabilityParams(LocalDate date, LocalTime startTime, Integer duration) {
-        validateRequestParams(date, startTime, duration);
-    }
-
-    public void validateBookingParams(BookingReqDTO bookingReqDTO) {
-        validateRequestParams(bookingReqDTO.getDate(), bookingReqDTO.getStartTime(), bookingReqDTO.getDuration());
-    }
-
-    private void validateRequestParams(LocalDate date, LocalTime startTime, Integer duration) {
-        if (date.isBefore(LocalDate.now())) {
-            throw new ValidationException("Invalid date");
-        }
-
-        if (startTime != null) {
-            LocalTime start = LocalTime.of(8, 0);
-            LocalTime end = LocalTime.of(22, 0);
-
-            if (startTime.isBefore(start) || startTime.isAfter(end)) {
-                throw new ValidationException("Slot must be between 08:00 and 22:00");
-            }
-            if (startTime.getMinute() % 30 != 0) {
-                throw new ValidationException("Slot must be in 30-minute intervals (e.g., 08:00, 08:30, 09:00)");
-            }
-        }
-
-        if (duration != null && !(duration.equals(TWO_HOURS_DURATION)
-                || duration.equals(FOUR_HOURS_DURATION))) {
-            throw new ValidationException("Invalid duration");
-        }
-    }
-
-    private String queryStringForAvailableSlots(String endInterval, String windowInterval) {
-        return String.format("""
-                    WITH slot_range AS (
-                        SELECT
-                            start_time,
-                            start_time + interval '%s' as end_time,
-                            STRING_AGG(DISTINCT cleaner_id::text, ',') AS cleaner_ids,
-                            COUNT(*)
-                            OVER (
-                                ORDER BY start_time
-                                RANGE BETWEEN CURRENT ROW AND INTERVAL '%s' FOLLOWING
-                                ) as slots_count
-                        FROM availability_slots
-                        WHERE  slot_date = :slotDate
-                          AND is_available = true
-                        GROUP BY start_time
-                    )
-                    SELECT
-                        start_time,
-                        end_time,
-                        cleaner_ids
-                    FROM slot_range
-                    WHERE slots_count = :requiredSlotCount
-                """, endInterval, windowInterval);
     }
 
     private BookingDTO getBookingQueryParamDTO(LocalDate date, LocalTime startTime, Integer duration) {
