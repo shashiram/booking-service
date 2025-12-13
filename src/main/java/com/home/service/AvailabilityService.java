@@ -44,8 +44,19 @@ public class AvailabilityService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public List<CleanerAvailabilityRespDTO> checkAvailability(LocalDate date) {
 
-        // query for duration 2 hours
+        List<SlotRangeRecord> slotFor2HoursList = getAvailableSlotsFor2Hours(date);
+        List<SlotRangeRecord> slotFor4HoursList = getAvailableSlotsFor4Hours(date);
 
+        Map<Long, List<CleanerAvailabilitySlotDTO>> availabilityMap = new HashMap<>();
+
+        processSlotRecords(slotFor2HoursList, availabilityMap, TWO_HOURS_DURATION);
+        processSlotRecords(slotFor4HoursList, availabilityMap, FOUR_HOURS_DURATION);
+
+        return buildResponseDTOList(availabilityMap, date);
+    }
+
+    @Transactional
+    public List<SlotRangeRecord> getAvailableSlotsFor2Hours(LocalDate date) {
         String slotSqlQueryFor2Hours = queryStringForAvailableSlots(END_INTERVAL_2_HOURS, WINDOW_INTERVAL_2_HOURS);
 
         log.debug("Generated SQL (2 hours): {}", slotSqlQueryFor2Hours);
@@ -54,9 +65,11 @@ public class AvailabilityService {
         slotQueryFor2Hours.setParameter("slotDate", date);
         slotQueryFor2Hours.setParameter("requiredSlotCount", REQUIRED_SLOTS_IN_2_HOURS_DURATION);
 
-        List<SlotRangeRecord> slotFor2HoursList = slotQueryFor2Hours.getResultList();
+        return slotQueryFor2Hours.getResultList();
+    }
 
-        // query for duration 4 hours
+    @Transactional
+    public List<SlotRangeRecord> getAvailableSlotsFor4Hours(LocalDate date) {
         String slotSqlQueryFor4Hours = queryStringForAvailableSlots(END_INTERVAL_4_HOURS, WINDOW_INTERVAL_4_HOURS);
 
         log.debug("Generated SQL (4 hours): {}", slotSqlQueryFor4Hours);
@@ -65,37 +78,8 @@ public class AvailabilityService {
         slotQueryFor4Hours.setParameter("slotDate", date);
         slotQueryFor4Hours.setParameter("requiredSlotCount", REQUIRED_SLOTS_IN_4_HOURS_DURATION);
 
-        List<SlotRangeRecord> slotFor4HoursList = slotQueryFor4Hours.getResultList();
-
-        Map<Long, List<CleanerAvailabilitySlotDTO>> map = new HashMap<>();
-
-        for (SlotRangeRecord slot : slotFor2HoursList) {
-            for (String s : slot.cleanerIds().split(",")) {
-                map.computeIfAbsent(Long.parseLong(s), k -> new ArrayList<>())
-                        .add(new CleanerAvailabilitySlotDTO(
-                                TWO_HOURS_DURATION, slot.startTime(), slot.endTime().minusMinutes(INTERVAL)));
-            }
-        }
-
-        for (SlotRangeRecord slot : slotFor4HoursList) {
-            for (String s : slot.cleanerIds().split(",")) {
-                map.computeIfAbsent(Long.parseLong(s), k -> new ArrayList<>())
-                        .add(new CleanerAvailabilitySlotDTO(
-                                FOUR_HOURS_DURATION, slot.startTime(), slot.endTime().minusMinutes(INTERVAL)));
-            }
-        }
-
-        List<CleanerAvailabilityRespDTO> availableRespDTOList = new ArrayList<>();
-        for (Map.Entry<Long, List<CleanerAvailabilitySlotDTO>> entry : map.entrySet()) {
-            availableRespDTOList.add(new CleanerAvailabilityRespDTO(entry.getKey(), date, entry.getValue()));
-        }
-
-        log.info("Total cleaners available: {}", availableRespDTOList.size());
-        log.info("Availability check completed for date {}", date);
-
-        return availableRespDTOList;
+        return slotQueryFor4Hours.getResultList();
     }
-
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public List<CleanerAvailabilityRespDTO> checkAvailability(LocalDate date, LocalTime startTime, Integer duration) {
@@ -124,6 +108,36 @@ public class AvailabilityService {
 
     }
 
+    private List<CleanerAvailabilityRespDTO> buildResponseDTOList(
+            Map<Long, List<CleanerAvailabilitySlotDTO>> availabilityMap,
+            LocalDate date) {
+
+        List<CleanerAvailabilityRespDTO> availableRespDTOList = new ArrayList<>();
+
+        for (Map.Entry<Long, List<CleanerAvailabilitySlotDTO>> entry :
+                availabilityMap.entrySet()) {
+            availableRespDTOList.add(
+                    new CleanerAvailabilityRespDTO(entry.getKey(), date, entry.getValue()));
+        }
+
+        log.info("Total cleaners available: {}", availableRespDTOList.size());
+        log.info("Availability check completed for date {}", date);
+
+        return availableRespDTOList;
+    }
+    private void processSlotRecords(List<SlotRangeRecord> slotRecords,
+                                    Map<Long, List<CleanerAvailabilitySlotDTO>> map,
+                                    Integer duration) {
+        for (SlotRangeRecord slot : slotRecords) {
+            for (String cleanerId : slot.cleanerIds().split(",")) {
+                map.computeIfAbsent(Long.parseLong(cleanerId), k -> new ArrayList<>())
+                        .add(new CleanerAvailabilitySlotDTO(
+                                duration,
+                                slot.startTime(),
+                                slot.endTime().minusMinutes(INTERVAL)));
+            }
+        }
+    }
 
     private String queryStringForAvailableSlots(String endInterval, String windowInterval) {
         return String.format("""
