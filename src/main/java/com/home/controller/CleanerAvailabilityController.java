@@ -5,6 +5,8 @@ import com.home.service.AvailabilityService;
 import com.home.service.BookingService;
 import com.home.service.ValidationService;
 import jakarta.validation.constraints.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +18,7 @@ import java.util.List;
 @RequestMapping("/cleaner-availability")
 public class CleanerAvailabilityController {
 
+    private static final Logger log = LoggerFactory.getLogger(CleanerAvailabilityController.class);
     private final AvailabilityService availabilityService;
     private final ValidationService validationService;
 
