@@ -1,6 +1,5 @@
 package com.home.controller;
 
-import com.home.dto.BookingReqDTO;
 import com.home.dto.CleanerAvailabilityRespDTO;
 import com.home.service.AvailabilityService;
 import com.home.service.BookingService;
@@ -14,18 +13,18 @@ import java.time.LocalTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/availability")
-public class AvailabilityController {
+@RequestMapping("/cleaner-availability")
+public class CleanerAvailabilityController {
 
     private final AvailabilityService availabilityService;
     private final ValidationService validationService;
 
-    public AvailabilityController(BookingService bookingService, AvailabilityService availabilityService, ValidationService validationService) {
+    public CleanerAvailabilityController(BookingService bookingService, AvailabilityService availabilityService, ValidationService validationService) {
         this.availabilityService = availabilityService;
         this.validationService = validationService;
     }
 
-    @GetMapping("/check")
+    @GetMapping
     public List<CleanerAvailabilityRespDTO> checkAvailability(
             @RequestParam @NotNull(message = "Date is required")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
