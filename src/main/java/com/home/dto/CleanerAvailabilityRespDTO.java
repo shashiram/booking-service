@@ -6,12 +6,12 @@ import java.util.List;
 public class CleanerAvailabilityRespDTO {
     private Long cleanerId;
     private LocalDate date;
-    private List<CleanerAvailabilitySlotDTO> cleanerAvailability;
+    private List<CleanerAvailabilitySlotDTO> availableSlots;
 
     public CleanerAvailabilityRespDTO(Long cleanerId, LocalDate date, List<CleanerAvailabilitySlotDTO> cleanerAvailability) {
         this.cleanerId = cleanerId;
         this.date = date;
-        this.cleanerAvailability = cleanerAvailability;
+        this.availableSlots = cleanerAvailability;
     }
 
     public Long getCleanerId() {
@@ -30,11 +30,11 @@ public class CleanerAvailabilityRespDTO {
         this.date = date;
     }
 
-    public List<CleanerAvailabilitySlotDTO> getCleanerAvailability() {
-        return cleanerAvailability;
+    public List<CleanerAvailabilitySlotDTO> getAvailableSlots() {
+        return availableSlots;
     }
 
-    public void setCleanerAvailability(List<CleanerAvailabilitySlotDTO> cleanerAvailability) {
-        this.cleanerAvailability = cleanerAvailability;
+    public void setAvailableSlots(List<CleanerAvailabilitySlotDTO> availableSlots) {
+        this.availableSlots = availableSlots;
     }
 }

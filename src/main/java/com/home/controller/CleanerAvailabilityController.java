@@ -1,8 +1,8 @@
 package com.home.controller;
 
 import com.home.dto.CleanerAvailabilityRespDTO;
-import com.home.service.AvailabilityService;
-import com.home.service.BookingService;
+import com.home.service.CleanerAvailabilityService;
+import com.home.service.CleanerBookingService;
 import com.home.service.ValidationService;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -19,11 +19,11 @@ import java.util.List;
 public class CleanerAvailabilityController {
 
     private static final Logger log = LoggerFactory.getLogger(CleanerAvailabilityController.class);
-    private final AvailabilityService availabilityService;
+    private final CleanerAvailabilityService cleanerAvailabilityService;
     private final ValidationService validationService;
 
-    public CleanerAvailabilityController(BookingService bookingService, AvailabilityService availabilityService, ValidationService validationService) {
-        this.availabilityService = availabilityService;
+    public CleanerAvailabilityController(CleanerBookingService cleanerBookingService, CleanerAvailabilityService cleanerAvailabilityService, ValidationService validationService) {
+        this.cleanerAvailabilityService = cleanerAvailabilityService;
         this.validationService = validationService;
     }
 
@@ -37,9 +37,9 @@ public class CleanerAvailabilityController {
 
         validationService.validateCheckAvailabilityParams(date, startTime, duration);
         if (duration == null && startTime == null) {
-            return availabilityService.checkAvailability(date);
+            return cleanerAvailabilityService.checkAvailability(date);
         }
-        return availabilityService.checkAvailability(date, startTime, duration);
+        return cleanerAvailabilityService.checkAvailability(date, startTime, duration);
 
     }
 }

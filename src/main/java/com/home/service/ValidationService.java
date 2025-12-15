@@ -27,17 +27,7 @@ import static com.home.constant.AppConstant.*;
 public class ValidationService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-
-    private final AvailabilitySlotRepository availabilitySlotRepository;
-
-    @PersistenceContext
-    private final EntityManager entityManager;
-
-    public ValidationService(AvailabilitySlotRepository availabilitySlotRepository, EntityManager entityManager) {
-        this.availabilitySlotRepository = availabilitySlotRepository;
-        this.entityManager = entityManager;
-    }
-
+    
     public void validateBookingParams(BookingReqDTO bookingReqDTO) {
         validateRequestParams(bookingReqDTO.getDate(), bookingReqDTO.getStartTime(), bookingReqDTO.getDuration());
     }

@@ -1,13 +1,11 @@
 package com.home.service;
 
 import com.home.dto.BookingDTO;
-import com.home.dto.BookingReqDTO;
 import com.home.dto.CleanerAvailabilityRespDTO;
 import com.home.dto.CleanerAvailabilitySlotDTO;
-import com.home.exception.ValidationException;
+import com.home.mapper.BookingMapper;
 import com.home.record.CleanerRecord;
 import com.home.record.SlotRangeRecord;
-import com.home.record.SlotRecord;
 import com.home.repository.AvailabilitySlotRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -15,29 +13,30 @@ import jakarta.persistence.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.home.constant.AppConstant.*;
 
 @Service
-public class AvailabilityService {
+public class CleanerAvailabilityService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final AvailabilitySlotRepository availabilitySlotRepository;
 
+    private final BookingMapper  bookingMapper;
+
     @PersistenceContext
     private final EntityManager entityManager;
 
-    public AvailabilityService(AvailabilitySlotRepository availabilitySlotRepository, EntityManager entityManager) {
+    public CleanerAvailabilityService(AvailabilitySlotRepository availabilitySlotRepository, BookingMapper bookingMapper, EntityManager entityManager) {
         this.availabilitySlotRepository = availabilitySlotRepository;
+        this.bookingMapper = bookingMapper;
         this.entityManager = entityManager;
     }
 
@@ -86,20 +85,20 @@ public class AvailabilityService {
 
         log.info("Checking cleaner availability for date: {}", date);
 
-        BookingDTO paramDTO = getBookingQueryParamDTO(date, startTime, duration);
+        BookingDTO bookingDTO = bookingMapper.toBookingQueryParamDto(date, startTime, duration);
         List<CleanerRecord> slots = availabilitySlotRepository
-                .findAvailableCleanersWithExactSlotCount(paramDTO.getDate(), paramDTO.getStartTime(),
-                        paramDTO.getEndTime(), paramDTO.getRequiredSlotCount());
+                .findAvailableCleanersWithExactSlotCount(bookingDTO.getDate(), bookingDTO.getStartTime(),
+                        bookingDTO.getEndTime(), bookingDTO.getRequiredSlotCount());
 
         List<CleanerAvailabilityRespDTO> respDTOList = new ArrayList<>();
         for (CleanerRecord slot : slots) {
 
             List<CleanerAvailabilitySlotDTO> slotDTOS = new ArrayList<>();
-            slotDTOS.add(new CleanerAvailabilitySlotDTO(duration, paramDTO.getStartTime(), paramDTO.getBookingEndTime()));
+            slotDTOS.add(new CleanerAvailabilitySlotDTO(duration, bookingDTO.getStartTime(), bookingDTO.getBookingEndTime()));
 
             respDTOList.add(new CleanerAvailabilityRespDTO(
                             slot.cleanerId(),
-                            paramDTO.getDate(),
+                            bookingDTO.getDate(),
                             slotDTOS
                     )
             );

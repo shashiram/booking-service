@@ -2,12 +2,10 @@ package com.home.service;
 
 import com.home.dto.BookingReqDTO;
 import com.home.dto.BookingDTO;
-import com.home.dto.CleanerAvailabilityRespDTO;
-import com.home.dto.CleanerAvailabilitySlotDTO;
 import com.home.exception.ValidationException;
+import com.home.mapper.BookingMapper;
 import com.home.record.CleanerRecord;
 import com.home.record.SlotRecord;
-import com.home.record.SlotRangeRecord;
 import com.home.repository.AvailabilitySlotRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -26,22 +24,26 @@ import java.util.stream.Collectors;
 import static com.home.constant.AppConstant.*;
 
 @Service
-public class BookingService {
+public class CleanerBookingService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final AvailabilitySlotRepository availabilitySlotRepository;
+    private final BookingMapper bookingMapper;
 
     @PersistenceContext
     private final EntityManager entityManager;
 
-    public BookingService(AvailabilitySlotRepository availabilitySlotRepository, EntityManager entityManager) {
+    public CleanerBookingService(AvailabilitySlotRepository availabilitySlotRepository, BookingMapper bookingMapper, EntityManager entityManager) {
         this.availabilitySlotRepository = availabilitySlotRepository;
+        this.bookingMapper = bookingMapper;
         this.entityManager = entityManager;
     }
 
+
+
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public String createBooking(BookingReqDTO bookingReqDTO) {
+    public String bookCleaners(BookingReqDTO bookingReqDTO) {
         /*
        Steps:
 
@@ -69,7 +71,7 @@ public class BookingService {
 
         log.info(" Inside create booking {} ", bookingReqDTO);
 
-        BookingDTO bookingDTO = getBookingQueryParamDTO(bookingReqDTO.getDate(), bookingReqDTO.getStartTime()
+        BookingDTO bookingDTO = bookingMapper.toBookingQueryParamDto(bookingReqDTO.getDate(), bookingReqDTO.getStartTime()
                 , bookingReqDTO.getDuration());
 
         String cleanerIds = bookingReqDTO.getCleanerIds().stream()
